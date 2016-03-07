@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# listen on specific loopback
+xterm -T "loopback 127.0.10.1" -e ./ut -b 127.0.10.1 -f 40000 -r &
+
+# listen on any, but connect to "remote loopback"
+xterm -T "any interface, connected to 127.0.10.1" -e ./ut -f 40000 -c 127.0.10.1 -r &
+
+sleep 1
+netstat -naup 2> /dev/null | grep "/ut"
+
+# send to specific loopback - source from 127.0.0.1
+./ut -s 127.0.10.1 -t 40000 -i 1000 -m "To loopback 127.0.10.1" &
+
+# send to connected loopback - must originate from 127.0.10.1
+./ut -b 127.0.10.1 -s 127.0.0.1 -t 40000 -i 1000 -m "To any interface (from 127.0.10.1)" &
+
+read
+
+jobs -p | xargs kill
